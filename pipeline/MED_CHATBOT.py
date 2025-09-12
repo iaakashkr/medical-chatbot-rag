@@ -10,7 +10,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from pipeline.embedder import Embedder
 from pipeline.retrieval import fetch_few_shots
 from pipeline.llm import call_medical_llm, LLMCallError
-from DTO.dto import QueryDTO
+from app.dto import QueryDTO
 
 
 
