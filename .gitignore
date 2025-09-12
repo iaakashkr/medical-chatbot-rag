@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pdb
+*.egg
+*.egg-info/
+dist/
+build/
+*.manifest
+*.spec
+
+# Virtual environment
+venv/
+myenv/
+.env
+
+# Logs
+logs/
+*.log
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Streamlit temp files
+.streamlit/
+
+# Ignore Jupyter checkpoints if any
+.ipynb_checkpoints/
