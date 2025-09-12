@@ -2,19 +2,23 @@
 import os
 import json
 import re
-from dotenv import load_dotenv
 import google.generativeai as genai
 
 from pipeline.token_counter import count_tokens
 from pipeline.token_tracker import token_tracker
 
-load_dotenv()
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+# ----------------- GEMINI API Key -----------------
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    raise RuntimeError("❌ GEMINI_API_KEY environment variable not set.")
+genai.configure(api_key=GEMINI_API_KEY)
 
+# ----------------- Custom Exception -----------------
 class LLMCallError(Exception):
     """Custom exception for LLM call failures in medical chatbot."""
     pass
 
+# ----------------- LLM Call -----------------
 def call_medical_llm(
     step_name: str,
     user_question: str,
