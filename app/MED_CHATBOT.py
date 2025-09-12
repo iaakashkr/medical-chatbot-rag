@@ -4,10 +4,16 @@ import os
 import pandas as pd
 import faiss
 
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from pipeline.embedder import Embedder
 from pipeline.retrieval import fetch_few_shots
 from pipeline.llm import call_medical_llm, LLMCallError
-from app.dto import QueryDTO
+from DTO.dto import QueryDTO
+
+
+
 
 # ---- Configure Logging ----
 log_file = "logs/chatbot.log"
@@ -27,7 +33,7 @@ logger = logging.getLogger(__name__)
 def init_fewshot_precomputed(
     faiss_file="resources/embeddings/med_embeddings.faiss",
     bm25_file="resources/pickles/syntactic_model_med.pkl",
-    examples_file="train.csv"
+    examples_file="resources/train.csv"
 ):
     examples_df = pd.read_csv(examples_file)
 

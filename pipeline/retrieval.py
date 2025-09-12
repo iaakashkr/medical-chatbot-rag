@@ -3,7 +3,7 @@ import faiss
 import numpy as np
 import pandas as pd
 import re
-from embedder import Embedder  # OpenAI or HuggingFace Embedder
+from pipeline.embedder import Embedder  # OpenAI or HuggingFace Embedder
 from rank_bm25 import BM25Okapi
 import logging
 
