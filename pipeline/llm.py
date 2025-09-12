@@ -5,8 +5,8 @@ import re
 from dotenv import load_dotenv
 import google.generativeai as genai
 
-from token_counter import count_tokens
-from token_tracker import token_tracker
+from pipeline.token_counter import count_tokens
+from pipeline.token_tracker import token_tracker
 
 load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
