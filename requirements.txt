@@ -1,0 +1,17 @@
+# Core
+pandas>=2.1.0
+numpy>=1.25.0
+faiss-cpu>=1.7.4.post2
+python-dotenv>=1.0.0
+tqdm>=4.66.0
+
+# LLM + Embeddings
+google-generativeai>=0.1.0
+sentence-transformers>=2.2.2
+rank_bm25>=0.2.2
+
+# Web/UI
+streamlit>=1.26.0
+
+# Optional: Logging, typing
+typing-extensions>=4.7.1
