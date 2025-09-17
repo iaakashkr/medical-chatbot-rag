@@ -119,7 +119,6 @@
 #     return output, usage
 
 
-
 # llm.py
 import os
 import json
@@ -130,11 +129,18 @@ from pipeline.token_counter import count_tokens
 from pipeline.token_tracker import token_tracker
 
 # ----------------- GEMINI API Keys (Rotation) -----------------
-api_keys = os.getenv("GEMINI_API_KEYS", "").split(",")
-api_keys = [k.strip() for k in api_keys if k.strip()]
+api_keys = []
+
+# Collect all secrets named GEMINI_API_KEY_1, GEMINI_API_KEY_2, ...
+for k, v in os.environ.items():
+    if k.startswith("GEMINI_API_KEY_") and v.strip():
+        api_keys.append((k, v.strip()))
+
+# Sort by key name so order is predictable: _1, _2, _3...
+api_keys = [v for k, v in sorted(api_keys, key=lambda x: x[0])]
 
 if not api_keys:
-    raise RuntimeError("❌ GEMINI_API_KEYS environment variable not set or empty.")
+    raise RuntimeError("❌ No Gemini API keys found (expected GEMINI_API_KEY_1, GEMINI_API_KEY_2, ...).")
 
 _current_key_index = 0
 
