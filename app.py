@@ -157,7 +157,6 @@
 # # ----------------- Launch Gradio -----------------
 # demo.launch(server_name="0.0.0.0", server_port=7860, show_error=True)  # <-- Added show_error=True for debug
 
-
 # app.py
 import gradio as gr
 import os
@@ -302,6 +301,7 @@ def chat_fn(user_question, session_id=None):
         dto.source_examples = response_json.get("source_examples", [])
         dto.usage = usage
         logger.info(f"LLM returned answer ({len(dto.answer.split())} words approx)")
+        logger.debug(f"Full Response JSON: {response_json}")  # internal debug
     except LLMCallError as e:
         logger.error(f"❌ LLM error: {str(e)}")
         dto.answer = f"LLM Error: {str(e)}"
@@ -313,20 +313,15 @@ def chat_fn(user_question, session_id=None):
     chat_histories[session_id].append({"role": "user", "content": user_question, "timestamp": timestamp})
     chat_histories[session_id].append({"role": "assistant", "content": dto.answer, "timestamp": timestamp})
 
-    return {
-        "session_id": session_id,
-        "question": dto.user_question,
-        "answer": dto.answer,
-        "source_examples": dto.source_examples,
-        "usage": dto.usage
-    }
+    # Return only clean answer for UI
+    return dto.answer
 
 # ----------------- Gradio Interface -----------------
 with gr.Blocks() as demo:
     gr.Markdown("## 🩺 Medical FAQ Chatbot (RAG + Gemini LLM)")
     session_id_input = gr.Textbox(label="Session ID (optional)", placeholder="Leave empty for auto UUID")
-    user_question_input = gr.Textbox(label="Your Question", placeholder="Type a medical question here...")
-    output_box = gr.JSON(label="Response")
+    user_question_input = gr.Textbox(label="Enter Your Question :", placeholder="Type a medical question here...")
+    output_box = gr.Textbox(label="Answer")  # Show only answer to user
 
     submit_btn = gr.Button("Ask")
     submit_btn.click(chat_fn, inputs=[user_question_input, session_id_input], outputs=output_box)
