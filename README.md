@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Medical Chatbot RAG
 
 A Retrieval-Augmented Generation (RAG) chatbot designed for answering medical FAQs.  
@@ -188,3 +189,19 @@ python scripts/generate_embeddings.py
 
 ## License
 This project is licensed under the [Apache 2.0 License](https://github.com/iaakashkr/medical-chatbot-rag/blob/main/LICENSE) © 2025 Akash Kumar
+=======
+---
+title: Medcial BOT
+emoji: 🔥
+colorFrom: red
+colorTo: pink
+sdk: gradio
+sdk_version: 5.46.0
+app_file: app.py
+pinned: false
+license: apache-2.0
+short_description: General Medical Assistance Chatbot (RAG + Gemini LLM)
+---
+
+Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+>>>>>>> 07b76420f9b9a54a9e9a4ac8a5547ccbc68f3f6d
