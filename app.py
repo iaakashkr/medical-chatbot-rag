@@ -318,7 +318,7 @@ def chat_fn(user_question, session_id=None):
 
 # ----------------- Gradio Interface -----------------
 with gr.Blocks() as demo:
-    gr.Markdown("## 🩺 Medical FAQ Chatbot (RAG + Gemini LLM)")
+    gr.Markdown("## 🩺 Medical FAQ Chatbot (RAG + LLM)")
     session_id_input = gr.Textbox(label="Session ID (optional)", placeholder="Leave empty for auto UUID")
     user_question_input = gr.Textbox(label="Enter Your Question :", placeholder="Type a medical question here...")
     output_box = gr.Textbox(label="Answer")  # Show only answer to user
