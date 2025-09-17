@@ -1,6 +1,6 @@
 # Core
 pandas>=2.1.0
-numpy>=1.25.0
+numpy<2           # force NumPy <2 for FAISS
 faiss-cpu==1.7.4
 python-dotenv>=1.0.0
 tqdm>=4.66.0
