@@ -192,8 +192,8 @@ def download_file(url, local_path):
 
 # ----------------- Load Resources -----------------
 def init_resources(
-    faiss_url="https://huggingface.co/datasets/iaakashkr/med_chatbot/resolve/main/med_embeddings.faiss",
-    train_url="https://huggingface.co/datasets/iaakashkr/med_chatbot/resolve/main/train.csv",
+    faiss_url="https://raw.githubusercontent.com/iaakashkr/medical-chatbot-rag/main/resources/embeddings/med_embeddings.faiss",
+    train_url="https://raw.githubusercontent.com/iaakashkr/medical-chatbot-rag/main/resources/train.csv",
     bm25_file="resources/pickles/syntactic_model_med.pkl"
 ):
     # Download large files at runtime
