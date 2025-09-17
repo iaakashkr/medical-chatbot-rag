@@ -1,4 +1,3 @@
-
 # # app.py
 # import gradio as gr
 # import os
@@ -7,7 +6,6 @@
 # import pickle
 # import faiss
 # import uuid
-# import requests
 # from datetime import datetime
 
 # from pipeline.embedder import Embedder
@@ -19,39 +17,20 @@
 # logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 # logger = logging.getLogger(__name__)
 
-# # ----------------- Download Large Files -----------------
-# def download_file(url, local_path):
-#     os.makedirs(os.path.dirname(local_path), exist_ok=True)
-#     if not os.path.exists(local_path):
-#         logger.info(f"Downloading {url} -> {local_path}")
-#         r = requests.get(url, stream=True)
-#         with open(local_path, "wb") as f:
-#             for chunk in r.iter_content(chunk_size=8192):
-#                 f.write(chunk)
-#     else:
-#         logger.info(f"File already exists: {local_path}")
-
 # # ----------------- Load Resources -----------------
 # def init_resources(
-#     faiss_url="https://raw.githubusercontent.com/iaakashkr/medical-chatbot-rag/main/resources/embeddings/med_embeddings.faiss",
-#     train_url="https://raw.githubusercontent.com/iaakashkr/medical-chatbot-rag/main/resources/train.csv",
-#     bm25_file="resources/pickles/syntactic_model_med.pkl"
+#     faiss_file="resources/embeddings/med_embeddings.faiss",
+#     bm25_file="resources/pickles/syntactic_model_med.pkl",
+#     examples_file="resources/train.csv"
 # ):
-#     # Download large files at runtime
-#     faiss_file = "resources/embeddings/med_embeddings.faiss"
-#     examples_file = "resources/train.csv"
-#     download_file(faiss_url, faiss_file)
-#     download_file(train_url, examples_file)
-
-#     # Load CSV examples
 #     examples_df = pd.read_csv(examples_file)
 #     logger.info(f"Loaded {len(examples_df)} examples from {examples_file}")
 
-#     # Embedder
 #     embedder = Embedder(model_name="sentence-transformers/all-MiniLM-L6-v2")
+#     # Dynamically determine embedding dimension
 #     dimension = embedder.embed("test").shape[0]
 
-#     # Load FAISS
+#     # Load FAISS index safely
 #     if os.path.exists(faiss_file):
 #         try:
 #             faiss_index = faiss.read_index(faiss_file)
@@ -63,7 +42,7 @@
 #         logger.warning(f"⚠️ FAISS file not found at {faiss_file}, creating empty index")
 #         faiss_index = faiss.IndexFlatIP(dimension)
 
-#     # Load BM25
+#     # Load BM25 model safely
 #     if os.path.exists(bm25_file):
 #         try:
 #             with open(bm25_file, "rb") as f:
@@ -83,13 +62,13 @@
 
 # # ----------------- Stateful Chat Histories -----------------
 # chat_histories = {}
-# MAX_HISTORY = 4
+# MAX_HISTORY = 4  # Keep last 4 user/assistant turns
 
 # # ----------------- Chat Function -----------------
 # def chat_fn(user_question, session_id=None):
 #     dto = QueryDTO(user_question=user_question)
 
-#     # Session ID handling
+#     # ----------------- Session ID Handling -----------------
 #     if not session_id:
 #         session_id = str(uuid.uuid4())
 #         logger.info(f"Generated new session ID: {session_id}")
@@ -97,7 +76,7 @@
 #     if session_id not in chat_histories:
 #         chat_histories[session_id] = []
 
-#     # Few-shot retrieval
+#     # ----------------- Empty FAISS/BM25 Handling -----------------
 #     fewshot_result = {}
 #     if faiss_index is not None or bm25_model is not None:
 #         fewshot_result = fetch_few_shots(
@@ -117,11 +96,14 @@
 #     dto.few_shot_examples = fewshot_result["few_shot_examples"]
 #     dto.matched_indices = fewshot_result["matched_indices"]
 
-#     # Full context
+#     # ----------------- Full Context Concatenation -----------------
+#     # Limit few-shot examples to last 5
 #     rag_items = list(dto.few_shot_examples.items())[-5:]
 #     rag_context = "\n".join([f"{k}: {v}" for k, v in rag_items])
+#     # Optional: truncate to ~1000 words to prevent token overflow
 #     rag_context = " ".join(rag_context.split()[:1000])
 
+#     # Limit conversation history to MAX_HISTORY turns
 #     recent_history = chat_histories[session_id][-MAX_HISTORY:]
 #     history_str = "\n".join([f"{turn['role']}: {turn['content']}" for turn in recent_history])
 
@@ -129,7 +111,7 @@
 #     if history_str:
 #         full_context += "\nPrevious conversation:\n" + history_str
 
-#     # LLM call
+#     # ----------------- LLM Call -----------------
 #     try:
 #         model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
 #         response_json, usage = call_medical_llm(
@@ -149,13 +131,13 @@
 #         dto.source_examples = []
 #         dto.usage = {}
 
-#     # Update chat history
+#     # ----------------- Update Chat History -----------------
 #     timestamp = str(datetime.now())
 #     chat_histories[session_id].append({"role": "user", "content": user_question, "timestamp": timestamp})
 #     chat_histories[session_id].append({"role": "assistant", "content": dto.answer, "timestamp": timestamp})
 
 #     return {
-#         "session_id": session_id,
+#         "session_id": session_id,  # <-- Added: return session_id to reuse
 #         "question": dto.user_question,
 #         "answer": dto.answer,
 #         "source_examples": dto.source_examples,
@@ -172,9 +154,8 @@
 #     submit_btn = gr.Button("Ask")
 #     submit_btn.click(chat_fn, inputs=[user_question_input, session_id_input], outputs=output_box)
 
-# # Launch
-# demo.launch(server_name="0.0.0.0", server_port=7860, show_error=True)
-
+# # ----------------- Launch Gradio -----------------
+# demo.launch(server_name="0.0.0.0", server_port=7860, show_error=True)  # <-- Added show_error=True for debug
 
 # app.py
 import gradio as gr
@@ -320,6 +301,7 @@ def chat_fn(user_question, session_id=None):
         dto.source_examples = response_json.get("source_examples", [])
         dto.usage = usage
         logger.info(f"LLM returned answer ({len(dto.answer.split())} words approx)")
+        logger.debug(f"Full Response JSON: {response_json}")  # internal debug
     except LLMCallError as e:
         logger.error(f"❌ LLM error: {str(e)}")
         dto.answer = f"LLM Error: {str(e)}"
@@ -331,27 +313,15 @@ def chat_fn(user_question, session_id=None):
     chat_histories[session_id].append({"role": "user", "content": user_question, "timestamp": timestamp})
     chat_histories[session_id].append({"role": "assistant", "content": dto.answer, "timestamp": timestamp})
 
-    # ----- CLEAN LOG OUTPUT -----
-    final_response = {
-        "session_id": session_id,
-        "question": dto.user_question,
-        "answer": dto.answer,
-        "source_examples": dto.source_examples,
-        "usage": dto.usage
-    }
-
-    # Print structured JSON log
-    print(final_response)              # ✅ JSON log like you showed
-    print(dto.answer, "\n")            # ✅ Clean answer text
-
-    return final_response
+    # Return only clean answer for UI
+    return dto.answer
 
 # ----------------- Gradio Interface -----------------
 with gr.Blocks() as demo:
     gr.Markdown("## 🩺 Medical FAQ Chatbot (RAG + Gemini LLM)")
     session_id_input = gr.Textbox(label="Session ID (optional)", placeholder="Leave empty for auto UUID")
     user_question_input = gr.Textbox(label="Enter Your Question :", placeholder="Type a medical question here...")
-    output_box = gr.JSON(label="Response")
+    output_box = gr.Textbox(label="Answer")  # Show only answer to user
 
     submit_btn = gr.Button("Ask")
     submit_btn.click(chat_fn, inputs=[user_question_input, session_id_input], outputs=output_box)
