@@ -37,3 +37,8 @@ Thumbs.db
 
 # Ignore Jupyter checkpoints if any
 .ipynb_checkpoints/
+
+# Runtime large files
+resources/embeddings/*.faiss
+resources/train.csv
+resources/pickles/*.pkl
