@@ -209,25 +209,20 @@ def init_resources(
     train_url="https://raw.githubusercontent.com/iaakashkr/medical-chatbot-rag/main/resources/train.csv",
     bm25_url="https://raw.githubusercontent.com/iaakashkr/medical-chatbot-rag/main/resources/pickles/syntactic_model_med.pkl"
 ):
-    # Local file paths
     faiss_file = "resources/embeddings/med_embeddings.faiss"
     examples_file = "resources/train.csv"
     bm25_file = "resources/pickles/syntactic_model_med.pkl"
 
-    # Download large files
     download_file(faiss_url, faiss_file)
     download_file(train_url, examples_file)
     download_file(bm25_url, bm25_file)
 
-    # Load CSV examples
     examples_df = pd.read_csv(examples_file)
     logger.info(f"Loaded {len(examples_df)} examples from {examples_file}")
 
-    # Embedder
     embedder = Embedder(model_name="sentence-transformers/all-MiniLM-L6-v2")
     dimension = embedder.embed("test").shape[0]
 
-    # Load FAISS
     if os.path.exists(faiss_file):
         try:
             faiss_index = faiss.read_index(faiss_file)
@@ -239,7 +234,6 @@ def init_resources(
         logger.warning(f"⚠️ FAISS file not found at {faiss_file}, creating empty index")
         faiss_index = faiss.IndexFlatIP(dimension)
 
-    # Load BM25
     if os.path.exists(bm25_file):
         try:
             with open(bm25_file, "rb") as f:
@@ -262,18 +256,14 @@ chat_histories = {}
 MAX_HISTORY = 4
 
 # ----------------- Chat Function -----------------
-def chat_fn(user_question, session_id=None):
+def chat_fn(user_question):
     dto = QueryDTO(user_question=user_question)
 
-    # Session ID handling
-    if not session_id:
-        session_id = str(uuid.uuid4())
-        logger.info(f"Generated new session ID: {session_id}")
-
+    # Always generate a session ID automatically
+    session_id = str(uuid.uuid4())
     if session_id not in chat_histories:
         chat_histories[session_id] = []
 
-    # Few-shot retrieval
     fewshot_result = {}
     if faiss_index is not None or bm25_model is not None:
         fewshot_result = fetch_few_shots(
@@ -293,7 +283,6 @@ def chat_fn(user_question, session_id=None):
     dto.few_shot_examples = fewshot_result["few_shot_examples"]
     dto.matched_indices = fewshot_result["matched_indices"]
 
-    # Full context
     rag_items = list(dto.few_shot_examples.items())[-5:]
     rag_context = "\n".join([f"{k}: {v}" for k, v in rag_items])
     rag_context = " ".join(rag_context.split()[:1000])
@@ -305,7 +294,6 @@ def chat_fn(user_question, session_id=None):
     if history_str:
         full_context += "\nPrevious conversation:\n" + history_str
 
-    # LLM call
     try:
         model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
         response_json, usage = call_medical_llm(
@@ -319,38 +307,33 @@ def chat_fn(user_question, session_id=None):
         dto.source_examples = response_json.get("source_examples", [])
         dto.usage = usage
         logger.info(f"LLM returned answer ({len(dto.answer.split())} words approx)")
-        logger.debug(f"Full Response JSON: {response_json}")  # internal debug
+        logger.debug(f"Full Response JSON: {response_json}")
     except LLMCallError as e:
         logger.error(f"❌ LLM error: {str(e)}")
         dto.answer = f"LLM Error: {str(e)}"
         dto.source_examples = []
         dto.usage = {}
 
-    # Update chat history
     timestamp = str(datetime.now())
     chat_histories[session_id].append({"role": "user", "content": user_question, "timestamp": timestamp})
     chat_histories[session_id].append({"role": "assistant", "content": dto.answer, "timestamp": timestamp})
 
-    # Return only clean answer for UI
     return dto.answer
 
 # ----------------- Gradio Interface -----------------
 with gr.Blocks() as demo:
     gr.Markdown("## 🩺 Medical FAQ Chatbot (RAG + LLM)")
 
-    # Question first
+    # Step 1: Enter Question
     user_question_input = gr.Textbox(
         label="Enter Your Question :",
         placeholder="Type a medical question here..."
     )
 
-    # Session ID second
-    session_id_input = gr.Textbox(
-        label="Session ID (optional)",
-        placeholder="Leave empty for auto UUID"
-    )
+    # Step 2: Ask button
+    submit_btn = gr.Button("Ask")
 
-    # Answer last, auto-expand
+    # Step 3: Answer box
     output_box = gr.Textbox(
         label="Answer",
         lines=5,
@@ -358,8 +341,6 @@ with gr.Blocks() as demo:
         interactive=False
     )
 
-    submit_btn = gr.Button("Ask")
-    submit_btn.click(chat_fn, inputs=[user_question_input, session_id_input], outputs=output_box)
+    submit_btn.click(chat_fn, inputs=[user_question_input], outputs=output_box)
 
-# Launch
 demo.launch(server_name="0.0.0.0", server_port=7860, show_error=True)
