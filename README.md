@@ -31,6 +31,7 @@ This chatbot combines a **hybrid retrieval system** with LLM-based generation:
 - **Structured Output:** Returns JSON containing `answer`, `source_examples`, and usage stats.
 
 Ideal for **hospitals, clinics, medical students, or educational platforms**.
+TRY :- https://tinyurl.com/4mf5uwzj
 
 ---
 
