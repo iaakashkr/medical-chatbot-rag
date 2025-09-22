@@ -42,7 +42,10 @@ You can try the chatbot live **without installing anything**:
 Sample: <img width="1918" height="923" alt="image" src="https://github.com/user-attachments/assets/7e6de580-483a-4c1c-9f9d-ee55f58671b6" />
 :  
 ```markdown
-![Medical BOT Demo](resources/demo/hf_demo.png)
+<img width="1919" height="921" alt="image" src="https://github.com/user-attachments/assets/57bce851-4f9a-4167-9b33-501720e9c405" />
+```
+<img width="1919" height="924" alt="image" src="https://github.com/user-attachments/assets/0275ea2c-705f-4d91-9809-2c83f360f706" />
+
 ---
 
 ## Features
