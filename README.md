@@ -134,7 +134,7 @@ GEMINI_API_KEY=your_google_gemini_api_key
 
 4. **Generate FAISS Embeddings & BM25 Pickle**
 ```bash
-python scripts/setup_resources.py
+python pipeline/embedder.py
 ```
 *(if resources already exist, skip this step)*
 
