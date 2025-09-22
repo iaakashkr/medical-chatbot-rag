@@ -1,12 +1,21 @@
+<<<<<<< HEAD
 # llm.py
 import os
 import json
 import re
+=======
+# llm_medical.py
+import os
+import json
+import re
+from dotenv import load_dotenv
+>>>>>>> eb9026629a701028ae1ae63cf8d38e74cefd44db
 import google.generativeai as genai
 
 from pipeline.token_counter import count_tokens
 from pipeline.token_tracker import token_tracker
 
+<<<<<<< HEAD
 # ----------------- GEMINI API Keys (Rotation) -----------------
 api_keys = []
 
@@ -30,15 +39,24 @@ def get_next_api_key():
     return key
 
 # ----------------- Custom Exception -----------------
+=======
+load_dotenv()
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+>>>>>>> eb9026629a701028ae1ae63cf8d38e74cefd44db
 class LLMCallError(Exception):
     """Custom exception for LLM call failures in medical chatbot."""
     pass
 
+<<<<<<< HEAD
 # ----------------- LLM Call -----------------
+=======
+>>>>>>> eb9026629a701028ae1ae63cf8d38e74cefd44db
 def call_medical_llm(
     step_name: str,
     user_question: str,
     retrieved_context: str = "",
+<<<<<<< HEAD
     model_name: str = os.getenv("GEMINI_MODEL", "gemini-1.5-flash"),
     response_format: str = "json",
 ):
@@ -60,15 +78,26 @@ def call_medical_llm(
     "If the question is not medical, respond with: 'I can only answer medical questions.' "
 )
 
+=======
+    model_name: str = "gemini-1.5-flash",
+    response_format: str = "json",
+):
+    prompt = "You are a knowledgeable medical assistant.\n"
+>>>>>>> eb9026629a701028ae1ae63cf8d38e74cefd44db
     if retrieved_context:
         prompt += f"Reference info:\n{retrieved_context}\n"
     prompt += (
         "Answer the following question concisely and accurately.\n"
+<<<<<<< HEAD
         "Output must be a valid JSON with keys 'answer' and 'source_examples'. "
+=======
+        "Output must be a valid JSON with keys 'answer' and 'source_examples'."
+>>>>>>> eb9026629a701028ae1ae63cf8d38e74cefd44db
         "Do NOT add extra text or markdown.\n"
         f"User Question: {user_question}"
     )
 
+<<<<<<< HEAD
     try:
         prompt_tokens = count_tokens(prompt, model_name)
     except Exception:
@@ -116,6 +145,21 @@ def call_medical_llm(
         completion_tokens = len(output.split())
         print("⚠️ [LLM] Token counting failed for output, falling back to word count.")
 
+=======
+    prompt_tokens = count_tokens(prompt, model_name)
+
+    model = genai.GenerativeModel(model_name)
+    try:
+        response = model.generate_content(prompt)
+        output = response.text.strip() if response.text else ""
+    except Exception as e:
+        msg = str(e)
+        if "ResourceExhausted" in msg or "quota" in msg.lower() or "token" in msg.lower():
+            raise LLMCallError(f"[{step_name}] Token exhaustion: {msg}")
+        raise LLMCallError(f"[{step_name}] LLM call failed: {msg}")
+
+    completion_tokens = count_tokens(output, model_name)
+>>>>>>> eb9026629a701028ae1ae63cf8d38e74cefd44db
     usage = {
         "prompt_tokens": prompt_tokens,
         "completion_tokens": completion_tokens,
@@ -124,6 +168,7 @@ def call_medical_llm(
         "model": model_name,
     }
 
+<<<<<<< HEAD
     print(f"📊 Token Usage: {usage}")
 
     # ----------------- Parse JSON -----------------
@@ -141,5 +186,13 @@ def call_medical_llm(
                 "answer": f"Failed to parse LLM response: {cleaned}",
                 "source_examples": []
             }, usage
+=======
+    if response_format == "json":
+        cleaned = re.sub(r"```(json|text)?", "", output, flags=re.IGNORECASE).strip()
+        try:
+            return json.loads(cleaned), usage
+        except json.JSONDecodeError:
+            return {"answer": f"Failed to parse LLM response: {cleaned}", "source_examples": []}, usage
+>>>>>>> eb9026629a701028ae1ae63cf8d38e74cefd44db
 
     return output, usage
