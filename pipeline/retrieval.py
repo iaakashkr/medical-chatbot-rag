@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # retrieval.py
+=======
+# fewshot_module.py
+>>>>>>> eb9026629a701028ae1ae63cf8d38e74cefd44db
 import faiss
 import numpy as np
 import pandas as pd
@@ -51,6 +55,7 @@ def hybrid_similarity_search(
     semantic_threshold: float = 0.2,
     syntactic_threshold: float = 0.5,
 ):
+<<<<<<< HEAD
     # --- FIXED: safe handling if faiss_index is None ---
     if faiss_index is None and (bm25_model is None or tokenized_corpus is None):
         log.warning("⚠️ Both FAISS and BM25 missing. Returning empty DataFrame.")
@@ -67,13 +72,29 @@ def hybrid_similarity_search(
         examples_df['semantic_score'] = np.array(distances[0])
     else:
         examples_df['semantic_score'] = 0  # FIXED: fallback if FAISS missing
+=======
+    query_clean = normalize(query)
+
+    # --- Semantic FAISS ---
+    vec = embed_text(query_clean, embedder)
+
+    if vec.shape[1] != faiss_index.d:
+        raise ValueError(f"FAISS index dimension ({faiss_index.d}) does not match embedding ({vec.shape[1]})")
+
+    distances, indices = faiss_index.search(vec, len(examples_df))
+    examples_df['semantic_score'] = np.array(distances[0])
+>>>>>>> eb9026629a701028ae1ae63cf8d38e74cefd44db
 
     # --- Optional Syntactic BM25 ---
     if bm25_model and tokenized_corpus:
         bm25_scores = bm25_model.get_scores(query_clean.split())
         examples_df['syntactic_score'] = bm25_scores
     else:
+<<<<<<< HEAD
         examples_df['syntactic_score'] = 0  # FIXED: fallback if BM25 missing
+=======
+        examples_df['syntactic_score'] = 0
+>>>>>>> eb9026629a701028ae1ae63cf8d38e74cefd44db
 
     # --- Filter by thresholds ---
     semantic_selection = examples_df[examples_df['semantic_score'] >= semantic_threshold]
@@ -92,6 +113,7 @@ def fetch_few_shots(
     tokenized_corpus: list = None,
     top_k: int = 2
 ):
+<<<<<<< HEAD
     # --- FIXED: safe handling if both FAISS and BM25 missing ---
     if faiss_index is None and (bm25_model is None or tokenized_corpus is None):
         log.warning("⚠️ Both FAISS and BM25 missing. Skipping few-shot retrieval.")
@@ -101,6 +123,8 @@ def fetch_few_shots(
             "matched_indices": []
         }
 
+=======
+>>>>>>> eb9026629a701028ae1ae63cf8d38e74cefd44db
     candidates_df = hybrid_similarity_search(
         query=user_question,
         examples_df=examples_df.copy(),
