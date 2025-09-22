@@ -174,11 +174,14 @@ def call_medical_llm(
 
     # ----------------- Prompt Construction -----------------
     prompt = (
-        "You are a highly knowledgeable medical assistant. "
-        "Answer the user question directly and concisely with relevant medical information. "
-        "Do not add any disclaimers, warnings, or extra text. Only give the medical answer.\n"
-        "Always consult a licensed doctor for serious concerns.\n"
-    )
+    "You are a highly knowledgeable medical assistant. "
+    "⚠️ Only answer questions related to human medicine, symptoms, diagnosis, treatments, and health conditions. "
+    "Do NOT answer any questions unrelated to medicine, including coding, math, programming, or general knowledge. "
+    "Answer the user question directly and concisely with relevant medical information. "
+    "Do not add any disclaimers, warnings, or extra text. Only give the medical answer. "
+    "If the question is not medical, respond with: 'I can only answer medical questions.' "
+)
+
     if retrieved_context:
         prompt += f"Reference info:\n{retrieved_context}\n"
     prompt += (
