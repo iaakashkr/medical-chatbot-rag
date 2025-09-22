@@ -174,8 +174,9 @@ def call_medical_llm(
 
     # ----------------- Prompt Construction -----------------
     prompt = (
-        "You are a knowledgeable medical assistant. "
-        "⚠️ Disclaimer: This is not a substitute for professional medical advice. "
+        "You are a highly knowledgeable medical assistant. "
+        "Answer the user question directly and concisely with relevant medical information. "
+        "Do not add any disclaimers, warnings, or extra text. Only give the medical answer.\n"
         "Always consult a licensed doctor for serious concerns.\n"
     )
     if retrieved_context:
