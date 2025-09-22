@@ -31,8 +31,18 @@ This chatbot combines a **hybrid retrieval system** with LLM-based generation:
 - **Structured Output:** Returns JSON containing `answer`, `source_examples`, and usage stats.
 
 Ideal for **hospitals, clinics, medical students, or educational platforms**.
-TRY :- https://tinyurl.com/4mf5uwzj
 
+---
+
+## Try It Online
+You can try the chatbot live **without installing anything**:
+
+[Click here to test the Medical BOT](https://huggingface.co/spaces/iaakashkr/Medical_BOT)
+
+Sample: <img width="1918" height="923" alt="image" src="https://github.com/user-attachments/assets/7e6de580-483a-4c1c-9f9d-ee55f58671b6" />
+:  
+```markdown
+![Medical BOT Demo](resources/demo/hf_demo.png)
 ---
 
 ## Features
