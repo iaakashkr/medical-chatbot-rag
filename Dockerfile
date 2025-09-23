@@ -1,24 +1,28 @@
-# Base Python image
-FROM python:3.11-slim
-
-# Set working directory inside container
+# Stage 1: Build stage
+FROM python:3.10-slim AS builder
 WORKDIR /app
 
-# Copy requirements first (for caching)
-COPY requirements.txt .
+# Install build tools only in this stage
+RUN apt-get update && apt-get install -y build-essential git && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
+# Copy only requirements first (for caching)
+COPY requirements.txt .
+RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the whole repo
-COPY . .
+# Stage 2: Final lightweight image
+FROM python:3.10-slim
+WORKDIR /app
 
-# Optional: expose a port for future FastAPI usage
+# Copy only the installed packages from builder
+COPY --from=builder /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copy only necessary project files (exclude big datasets or caches)
+COPY main.py app/ pipeline/ resources/pickles/ resources/embeddings/ app/dto/ .
+
 EXPOSE 8000
 
-# Environment variables for Gemini API keys (override at runtime)
-ENV GEMINI_API_KEY_1=""
-ENV GEMINI_MODEL="gemini-1.5-flash"
+ENV RUN_MODE="fastapi"
 
-# Default command: run your CLI chatbot
-CMD ["python", "-m", "app.main"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,20 +1,3 @@
-<<<<<<< HEAD
----
-title: "Medical BOT"
-emoji: "🔥"
-colorFrom: "red"
-colorTo: "pink"
-sdk: gradio
-sdk_version: "5.46.0"
-app_file: app.py
-pinned: false
-license: apache-2.0
-short_description: "General Medical Assistance Chatbot (RAG + LLM)"
----
-
-Simple Medical chatbot using RAG + LLM.  
-Ask questions and get structured responses.
-=======
 # Medical Chatbot RAG
 
 A Retrieval-Augmented Generation (RAG) chatbot designed for answering medical FAQs.  
@@ -219,4 +202,3 @@ python scripts/generate_embeddings.py
 
 ## License
 This project is licensed under the [Apache 2.0 License](https://github.com/iaakashkr/medical-chatbot-rag/blob/main/LICENSE) © 2025 Akash Kumar
->>>>>>> eb9026629a701028ae1ae63cf8d38e74cefd44db
