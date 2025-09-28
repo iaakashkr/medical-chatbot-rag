@@ -184,7 +184,10 @@ with gr.Blocks() as demo:
     answer_output = gr.Textbox(
         label="Answer",
         placeholder="The answer will appear here...",
-        interactive=False
+        interactive=False,
+        lines=10,  # start size (can grow)
+        max_lines=50,  # allow expansion
+        elem_id="answer-box"
     )
 
     submit_btn = gr.Button("Ask")
