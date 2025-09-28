@@ -175,12 +175,24 @@ def chat_fn(user_question, session_id=None):
 # ----------------- Gradio Interface -----------------
 with gr.Blocks() as demo:
     gr.Markdown("## 🩺 Medical FAQ Chatbot (RAG + Gemini LLM)")
-    session_id_input = gr.Textbox(label="Session ID (optional)", placeholder="Leave empty for auto UUID")
-    user_question_input = gr.Textbox(label="Your Question", placeholder="Type a medical question here...")
-    output_box = gr.JSON(label="Response")
+
+    user_question_input = gr.Textbox(
+        label="Your Question", 
+        placeholder="Type a medical question here..."
+    )
+
+    answer_output = gr.Textbox(
+        label="Answer",
+        placeholder="The answer will appear here...",
+        interactive=False
+    )
 
     submit_btn = gr.Button("Ask")
-    submit_btn.click(chat_fn, inputs=[user_question_input, session_id_input], outputs=output_box)
+    submit_btn.click(
+        lambda question: chat_fn(question)["answer"], 
+        inputs=user_question_input, 
+        outputs=answer_output
+    )
 
 # Launch
 demo.launch(server_name="0.0.0.0", server_port=7860, show_error=True)
