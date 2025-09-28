@@ -39,6 +39,7 @@ def init_resources(
     examples_file = "resources/train.csv"
     bm25_file = "resources/pickles/syntactic_model_med.pkl"
 
+    # Only download if missing
     if not os.path.exists(faiss_file):
         logger.info(f"FAISS index not found locally. Downloading from {faiss_url}")
         download_file(faiss_url, faiss_file)
@@ -51,12 +52,15 @@ def init_resources(
     else:
         logger.info(f"Train file found locally: {examples_file}")
 
+    # Load CSV examples
     examples_df = pd.read_csv(examples_file)
     logger.info(f"Loaded {len(examples_df)} examples from {examples_file}")
 
+    # Embedder
     embedder = Embedder(model_name="sentence-transformers/all-MiniLM-L6-v2")
     dimension = embedder.embed("test").shape[0]
 
+    # Load FAISS
     if os.path.exists(faiss_file):
         try:
             faiss_index = faiss.read_index(faiss_file)
@@ -68,6 +72,7 @@ def init_resources(
         logger.warning(f"⚠️ FAISS file not found at {faiss_file}, creating empty index")
         faiss_index = faiss.IndexFlatIP(dimension)
 
+    # Load BM25 (local file only)
     if os.path.exists(bm25_file):
         try:
             with open(bm25_file, "rb") as f:
@@ -83,6 +88,7 @@ def init_resources(
 
     return examples_df, faiss_index, bm25_model, tokenized_corpus, embedder
 
+
 examples_df, faiss_index, bm25_model, tokenized_corpus, embedder = init_resources()
 
 # ----------------- Stateful Chat Histories -----------------
@@ -93,6 +99,7 @@ MAX_HISTORY = 4
 def chat_fn(user_question, session_id=None):
     dto = QueryDTO(user_question=user_question)
 
+    # Session ID handling
     if not session_id:
         session_id = str(uuid.uuid4())
         logger.info(f"Generated new session ID: {session_id}")
@@ -100,6 +107,7 @@ def chat_fn(user_question, session_id=None):
     if session_id not in chat_histories:
         chat_histories[session_id] = []
 
+    # Few-shot retrieval
     fewshot_result = {}
     if faiss_index is not None or bm25_model is not None:
         fewshot_result = fetch_few_shots(
@@ -119,6 +127,7 @@ def chat_fn(user_question, session_id=None):
     dto.few_shot_examples = fewshot_result["few_shot_examples"]
     dto.matched_indices = fewshot_result["matched_indices"]
 
+    # Full context
     rag_items = list(dto.few_shot_examples.items())[-5:]
     rag_context = "\n".join([f"{k}: {v}" for k, v in rag_items])
     rag_context = " ".join(rag_context.split()[:1000])
@@ -130,6 +139,7 @@ def chat_fn(user_question, session_id=None):
     if history_str:
         full_context += "\nPrevious conversation:\n" + history_str
 
+    # LLM call
     try:
         model_name = os.getenv("GEMINI_MODEL", "models/gemini-flash-latest")
         response_json, usage = call_medical_llm(
@@ -149,6 +159,7 @@ def chat_fn(user_question, session_id=None):
         dto.source_examples = []
         dto.usage = {}
 
+    # Update chat history
     timestamp = str(datetime.now())
     chat_histories[session_id].append({"role": "user", "content": user_question, "timestamp": timestamp})
     chat_histories[session_id].append({"role": "assistant", "content": dto.answer, "timestamp": timestamp})
@@ -170,11 +181,15 @@ with gr.Blocks() as demo:
         placeholder="Type a medical question here..."
     )
 
-    answer_output = gr.HTML(label="Answer")  # ✅ Dynamic answer box
+    answer_output = gr.Textbox(
+        label="Answer",
+        placeholder="The answer will appear here...",
+        interactive=False
+    )
 
     submit_btn = gr.Button("Ask")
     submit_btn.click(
-        lambda question: f"<div style='white-space:pre-wrap'>{chat_fn(question)['answer']}</div>", 
+        lambda question: chat_fn(question)["answer"], 
         inputs=user_question_input, 
         outputs=answer_output
     )
