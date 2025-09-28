@@ -176,25 +176,26 @@ def chat_fn(user_question, session_id=None):
 with gr.Blocks() as demo:
     gr.Markdown("## 🩺 Medical FAQ Chatbot (RAG + Gemini LLM)")
 
-    with gr.Column():
-        user_question_input = gr.Textbox(
-            label="Your Question", 
-            placeholder="Type a medical question here..."
-        )
+    user_question_input = gr.Textbox(
+        label="Your Question", 
+        placeholder="Type a medical question here..."
+    )
 
-        submit_btn = gr.Button("Ask")
+    answer_output = gr.Textbox(
+        label="Answer",
+        placeholder="The answer will appear here...",
+        interactive=False,
+        lines=10,  # start size (can grow)
+        max_lines=50,  # allow expansion
+        elem_id="answer-box"
+    )
 
-        answer_output = gr.Textbox(
-            label="Answer",
-            placeholder="The answer will appear here...",
-            interactive=False,
-            lines=10,   # starting height
-            max_lines=50,
-            elem_id="answer-box"
-        )
+    submit_btn = gr.Button("Ask")
+    submit_btn.click(
+        lambda question: chat_fn(question)["answer"], 
+        inputs=user_question_input, 
+        outputs=answer_output
+    )
 
-        submit_btn.click(
-            lambda question: chat_fn(question)["answer"], 
-            inputs=user_question_input, 
-            outputs=answer_output
-        )
+# Launch
+demo.launch(server_name="0.0.0.0", server_port=7860, show_error=True)
