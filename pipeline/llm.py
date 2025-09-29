@@ -186,7 +186,7 @@ async def call_medical_llm(
     step_name: str,
     user_question: str,
     retrieved_context: str = "",
-    model_name: str = os.getenv("GEMINI_MODEL", "gemini-1.5-flash"),
+    model_name: str = os.getenv("GEMINI_MODEL", "models/gemini-flash-latest"),
     response_format: str = "json",
 ):
     log.info(f"🚀 [LLM] Step: {step_name}")

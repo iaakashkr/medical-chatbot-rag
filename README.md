@@ -11,13 +11,14 @@ It leverages semantic embeddings (FAISS) and syntactic search (BM25) to fetch re
 3. [Architecture](#architecture)
 4. [Folder Structure](#folder-structure)
 5. [Setup](#setup)
-6. [Usage](#usage)
-7. [Generating Resources](#generating-resources)
-8. [Environment Variables](#environment-variables)
-9. [Pipeline Details](#pipeline-details)
-10. [FAQ](#faq)
-11. [Contributing](#contributing)
-12. [License](#license)
+6. [Deployment (Docker + Modes)](#deployment-docker--modes)
+7. [Usage](#usage)
+8. [Generating Resources](#generating-resources)
+9. [Environment Variables](#environment-variables)
+10. [Pipeline Details](#pipeline-details)
+11. [FAQ](#faq)
+12. [Contributing](#contributing)
+13. [License](#license)
 
 ---
 
@@ -87,29 +88,37 @@ User receives response via CLI or API
 medical-chatbot-rag/
 │
 ├── app/                     
-│   ├── MED_CHATBOT.py
-│   └── dto/                 # DTO folder
-│       └── dto.py
+│   ├── __init__.py
+│   └── dto.py
 │
-├── pipeline/                # Core logic for retrieval & LLM calls
+├── DTO/                     
+│   └── dto.py
+│
+├── pipeline/                 # Core logic for retrieval & LLM calls
 │   ├── embedder.py
 │   ├── llm.py
 │   ├── retrieval.py
 │   ├── token_counter.py
 │   └── token_tracker.py
 │
-├── resources/               # Datasets & precomputed embeddings
+├── resources/                # Datasets & precomputed embeddings
 │   ├── train.csv
 │   ├── embeddings/
-│   │   └── med_embeddings.faiss
 │   └── pickles/
-│       └── syntactic_model_med.pkl
 │
-├── logs/                    # Log files
+├── tests/                    # Unit tests
+│   ├── test_embedder.py
+│   ├── test_llm.py
+│   └── test_retrieval.py
 │
-├── .env                     # API keys (ignored in git)
-├── requirements.txt         # Dependencies
-└── README.md
+├── .dockerignore
+├── .gitattributes
+├── .gitignore
+├── Dockerfile
+├── LICENSE
+├── main.py
+├── README.md
+└── requirements.txt
 ```
 
 ---
@@ -140,6 +149,65 @@ python pipeline/embedder.py
 
 ---
 
+## Deployment (Docker + Modes)
+
+### 🩺 Modes
+
+#### 1) FastAPI (default)
+- Set: `RUN_MODE=fastapi`  
+- Start server locally:  
+  ```bash
+  uvicorn app:app --reload --host 0.0.0.0 --port 8000
+  ```
+- Docs: [http://localhost:8000/docs](http://localhost:8000/docs)  
+
+#### 2) Gradio (GUI)
+- Set: `RUN_MODE=gradio`  
+- Run:  
+  ```bash
+  python app.py
+  ```
+- Browser: [http://localhost:7860](http://localhost:7860)  
+
+---
+
+### 📦 Docker Setup
+
+#### Pull prebuilt image
+```bash
+docker pull iakashkr/medical-chatbot:latest
+```
+
+#### Run FastAPI mode
+```bash
+docker run -d -p 8000:8000 -e GEMINI_API_KEY_1=<YOUR_API_KEY> iakashkr/medical-chatbot
+```
+
+#### Run Gradio mode
+```bash
+docker run -d -p 7860:7860 -e RUN_MODE=gradio -e GEMINI_API_KEY_1=<YOUR_API_KEY> iakashkr/medical-chatbot
+```
+
+---
+
+### ⚡ API Usage Example
+**Endpoint:** `POST /chat`  
+```json
+{
+  "user_question": "What are the symptoms of flu?",
+  "session_id": ""
+}
+```
+**Response:**
+```json
+{
+  "answer": "Flu symptoms can include fever, cough, sore throat, muscle aches, fatigue, and headache.",
+  "session_id": "04759a64-2505-47d9-accb-21f1b40b5e4b"
+}
+```
+
+---
+
 ## Usage
 
 ### CLI
@@ -166,6 +234,7 @@ python scripts/generate_embeddings.py
 
 ## Environment Variables
 - `GEMINI_API_KEY`: Your Google Gemini API key (required)
+- `RUN_MODE`: `"fastapi"` (default) or `"gradio"`
 - Optionally, adjust model name or thresholds in `pipeline/retrieval.py`
 
 ---

@@ -14,12 +14,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 FROM python:3.10-slim
 WORKDIR /app
 
-# Copy only the installed packages from builder
+# Copy installed packages from builder
 COPY --from=builder /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copy only necessary project files (exclude big datasets or caches)
-COPY main.py app/ pipeline/ resources/pickles/ resources/embeddings/ app/dto/ .
+# Copy the whole project folder structure
+COPY . .
 
 EXPOSE 8000
 

@@ -255,7 +255,7 @@ async def generate_answer(user_question, session_id=None):
         full_context += "\nPrevious conversation:\n" + history_str
 
     try:
-        model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+        model_name = os.getenv("GEMINI_MODEL", "models/gemini-flash-latest")
         response_json, usage = await call_medical_llm(
             step_name="chat",
             user_question=dto.user_question,
