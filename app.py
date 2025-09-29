@@ -180,14 +180,17 @@ with gr.Blocks() as demo:
         label="Your Question", 
         placeholder="Type a medical question here..."
     )
-
-    answer_output = gr.Textbox(
-        label="Answer",
-        placeholder="The answer will appear here...",
-        interactive=False
-    )
-
     submit_btn = gr.Button("Ask")
+    answer_output = gr.Textbox(
+    label="Answer",
+    placeholder="The answer will appear here...",
+    interactive=False,
+    lines=2,       # start with 2 lines (small box)
+    max_lines=20   # grow up to 20 lines if answer is long
+)
+
+
+
     submit_btn.click(
         lambda question: chat_fn(question)["answer"], 
         inputs=user_question_input, 
